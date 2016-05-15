@@ -1,28 +1,24 @@
 package main
 
 import (
-	"github.com/ronna-s/scheduler/channels"
+	"encoding/json"
 	. "github.com/ronna-s/scheduler/scheduler"
+	"io/ioutil"
+	"path"
+	"runtime"
 )
 
+type ()
+
 func main() {
-	NewScheduler(&channels.ConsumerChannelConfig{
-		ChannelConfig: channels.ChannelConfig{
-			Name:     "incoming",
-			User:     "guest",
-			Password: "guest",
-			Host:     "localhost",
-			Port:     "5672",
-		},
-		PrefetchCount: 1,
-	},
-		&channels.PublisherChannelConfig{
-			ChannelConfig: channels.ChannelConfig{
-				User:     "guest",
-				Password: "guest",
-				Host:     "localhost",
-				Port:     "5672",
-			},
-			Exchange: "jobs",
-		}).Run()
+	var config SchedulerConfig
+	_, currentFilename, _, _ := runtime.Caller(0)
+	cdir := path.Dir(currentFilename)
+	file, err := ioutil.ReadFile(path.Join(cdir, "config.json"))
+	err = json.Unmarshal(file, &config)
+	if err != nil {
+		panic(err)
+	}
+
+	NewScheduler(config).Run()
 }

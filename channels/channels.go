@@ -8,20 +8,20 @@ import (
 
 type (
 	ChannelConfig struct {
-		Name     string
-		User     string
-		Password string
-		Host     string
-		Port     string
+		Name     string `json:"name"`
+		User     string `json:"user"`
+		Password string `json:"password"`
+		Host     string `json:"host"`
+		Port     string `json:"port"`
 	}
 	ConsumerChannelConfig struct {
 		ChannelConfig
-		PrefetchCount int
+		PrefetchCount int `json:"prefetch"`
 	}
 	PublisherChannelConfig struct {
 		ChannelConfig
-		Exchange         string
-		RoutingKeyPrefix string
+		Exchange   string `json:"exchange"`
+		RoutingKey string `json:"routing_key"`
 	}
 	Channel interface {
 		Listen(messages chan<- Message)
@@ -34,8 +34,8 @@ type (
 	}
 	aMQPPublisherChannel struct {
 		aMQPChannel
-		Exchange         string
-		RoutingKeyPrefix string
+		Exchange   string
+		RoutingKey string
 	}
 	AMQPChannel interface {
 		Channel
@@ -76,7 +76,7 @@ func getAmqpChannel(url string) (*amqp.Channel, error) {
 
 	return ch, err
 }
-func NewConsumerAMQPChannel(conf *ConsumerChannelConfig) AMQPChannel {
+func NewConsumerAMQPChannel(conf ConsumerChannelConfig) AMQPChannel {
 	url := "amqp://" + conf.User + ":" + conf.Password + "@" + conf.Host + ":" + conf.Port
 	channel, err := getAmqpChannel(url)
 	if err != nil {
@@ -118,21 +118,21 @@ func (m *ackableMessage) Reject() error {
 	return m.delivery.Reject(false)
 }
 
-func NewPublisherChannel(conf *PublisherChannelConfig) PublisherChannel {
+func NewPublisherChannel(conf PublisherChannelConfig) PublisherChannel {
 	url := "amqp://" + conf.User + ":" + conf.Password + "@" + conf.Host + ":" + conf.Port
 	channel, err := getAmqpChannel(url)
 	if err != nil {
 		panic(err)
 	}
 	return &aMQPPublisherChannel{
-		aMQPChannel:      aMQPChannel{channel},
-		Exchange:         conf.Exchange,
-		RoutingKeyPrefix: conf.RoutingKeyPrefix,
+		aMQPChannel: aMQPChannel{channel},
+		Exchange:    conf.Exchange,
+		RoutingKey:  conf.RoutingKey,
 	}
 
 }
 func (p *aMQPPublisherChannel) Publish(body []byte) {
-	err := p.channel.Publish(p.Exchange, p.RoutingKeyPrefix, true, false, amqp.Publishing{
+	err := p.channel.Publish(p.Exchange, p.RoutingKey, true, false, amqp.Publishing{
 		DeliveryMode: amqp.Persistent,
 		Timestamp:    time.Now(),
 		ContentType:  "application/json",

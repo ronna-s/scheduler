@@ -7,6 +7,9 @@ import (
 	. "github.com/ronna-s/scheduler/job"
 	. "github.com/ronna-s/scheduler/scheduler"
 	. "github.com/ronna-s/scheduler/workers"
+	"io/ioutil"
+	"path"
+	"runtime"
 	"time"
 )
 
@@ -19,7 +22,8 @@ type (
 
 func main() {
 	go startScheduler()
-	conf := &channels.ConsumerChannelConfig{
+
+	conf := channels.ConsumerChannelConfig{
 		ChannelConfig: channels.ChannelConfig{
 			Name:     "jobs",
 			User:     "guest",
@@ -29,12 +33,17 @@ func main() {
 		},
 		PrefetchCount: 1,
 	}
+	fmt.Println("Starting 3 workers\n>>>>>>>>>>")
 	w1 := namedWorker{1, NewWorker(conf)}
 	w2 := namedWorker{2, NewWorker(conf)}
 	w3 := namedWorker{3, NewWorker(conf)}
+	st := time.Now()
 	testFunc := func(nworker namedWorker) func(b []byte) error {
 		return func(b []byte) error {
-			fmt.Println(fmt.Sprintf("Worker id: %d: \t%s", nworker.id, string(b)))
+			fmt.Println(
+				fmt.Sprintf(
+					"Worker #%d received job. Time since beginning: %v\nJob info: \n\t%s\n====================",
+					nworker.id, time.Since(st), string(b)))
 			return nil
 		}
 	}
@@ -48,28 +57,18 @@ func main() {
 
 }
 func startScheduler() {
-	NewScheduler(&channels.ConsumerChannelConfig{
-		ChannelConfig: channels.ChannelConfig{
-			Name:     "incoming",
-			User:     "guest",
-			Password: "guest",
-			Host:     "localhost",
-			Port:     "5672",
-		},
-		PrefetchCount: 1,
-	},
-		&channels.PublisherChannelConfig{
-			ChannelConfig: channels.ChannelConfig{
-				User:     "guest",
-				Password: "guest",
-				Host:     "localhost",
-				Port:     "5672",
-			},
-			Exchange: "jobs",
-		}).Run()
+	var config SchedulerConfig
+	_, currentFilename, _, _ := runtime.Caller(0)
+	cdir := path.Dir(currentFilename)
+	file, err := ioutil.ReadFile(path.Join(cdir, "../config.json"))
+	err = json.Unmarshal(file, &config)
+	if err != nil {
+		panic(err)
+	}
+	NewScheduler(config).Run()
 }
 func publishJobsToSchduler() {
-	publisherCh := channels.NewPublisherChannel(&channels.PublisherChannelConfig{
+	publisherCh := channels.NewPublisherChannel(channels.PublisherChannelConfig{
 		ChannelConfig: channels.ChannelConfig{
 			User:     "guest",
 			Password: "guest",
@@ -78,15 +77,16 @@ func publishJobsToSchduler() {
 		},
 		Exchange: "incoming",
 	})
-	body, _ := json.Marshal(Job{Data: []byte("1st - immediate"), Start: time.Now()})
+	fmt.Println("Publishing 5 jobs for 20 seconds\n<<<<<<<<<\n")
+	body, _ := json.Marshal(Job{Data: []byte("execute me immediatately"), Start: time.Now()})
 	publisherCh.Publish(body)
-	body, _ = json.Marshal(Job{Data: []byte("2nd - immediate - order can be confused with first"), Start: time.Now()})
+	body, _ = json.Marshal(Job{Data: []byte("execute me immediatately"), Start: time.Now()})
 	publisherCh.Publish(body)
-	body, _ = json.Marshal(Job{Data: []byte("4th - 10 seconds from start"), Start: time.Now().Add(10 * time.Second)})
+	body, _ = json.Marshal(Job{Data: []byte("execute me after 10 seconds"), Start: time.Now().Add(10 * time.Second)})
 	publisherCh.Publish(body)
-	body, _ = json.Marshal(Job{Data: []byte("last - 20 seconds from start"), Start: time.Now().Add(20 * time.Second)})
+	body, _ = json.Marshal(Job{Data: []byte("execute me after 20 seconds"), Start: time.Now().Add(20 * time.Second)})
 	publisherCh.Publish(body)
-	body, _ = json.Marshal(Job{Data: []byte("3rd - 5 seconds from start"), Start: time.Now().Add(5 * time.Second)})
+	body, _ = json.Marshal(Job{Data: []byte("execute me after 5 seconds"), Start: time.Now().Add(5 * time.Second)})
 	publisherCh.Publish(body)
 
 }

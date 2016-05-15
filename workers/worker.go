@@ -6,14 +6,14 @@ import (
 
 type (
 	worker struct {
-		conf *channels.ConsumerChannelConfig
+		conf channels.ConsumerChannelConfig
 	}
 	Worker interface {
 		HandleJobs(cb func([]byte) error)
 	}
 )
 
-func NewWorker(conf *channels.ConsumerChannelConfig) Worker {
+func NewWorker(conf channels.ConsumerChannelConfig) Worker {
 	return &worker{conf}
 }
 

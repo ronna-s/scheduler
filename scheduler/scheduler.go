@@ -12,18 +12,22 @@ type (
 	Scheduler interface {
 		Run()
 	}
+	SchedulerConfig struct {
+		Publisher channels.PublisherChannelConfig
+		Consumer  channels.ConsumerChannelConfig
+	}
+
 	scheduler struct {
 		jobs          []Job
 		incomingJobs  <-chan Job
 		outGoing      chan Job
-		consumerConf  *channels.ConsumerChannelConfig
-		publisherConf *channels.PublisherChannelConfig
+		consumerConf  channels.ConsumerChannelConfig
+		publisherConf channels.PublisherChannelConfig
 	}
 )
 
-func NewScheduler(consumerConf *channels.ConsumerChannelConfig,
-	publisherConf *channels.PublisherChannelConfig) Scheduler {
-	return &scheduler{consumerConf: consumerConf, publisherConf: publisherConf}
+func NewScheduler(conf SchedulerConfig) Scheduler {
+	return &scheduler{consumerConf: conf.Consumer, publisherConf: conf.Publisher}
 }
 func (s *scheduler) Run() {
 	incomingMessages := make(chan channels.Message)

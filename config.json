@@ -1,0 +1,19 @@
+{
+	"Publisher": {
+		"name": "",
+		"user": "guest",
+		"password": "guest",
+		"host": "localhost",
+		"port": "5672",
+		"exchange": "jobs",
+		"routing_key": ""
+	},
+	"Consumer": {
+		"name": "incoming",
+		"user": "guest",
+		"password": "guest",
+		"host": "localhost",
+		"port": "5672",
+		"prefetch": 1
+	}
+}

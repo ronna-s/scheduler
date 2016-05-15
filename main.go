@@ -7,7 +7,6 @@ import (
 	. "github.com/ronna-s/scheduler/job"
 	. "github.com/ronna-s/scheduler/scheduler"
 	. "github.com/ronna-s/scheduler/workers"
-	"runtime"
 	"time"
 )
 

@@ -1,5 +1,5 @@
 # scheduler solution based on rabbitmq
-scheduler receives jobs from rabbit and publishes jobs upon start time to exchange based on config
+scheduler receives jobs from rabbit and publishes jobs upon start time to exchanges for workers (consumers) based on config
 workers receive jobs data from rabbit based on config and run them
 
 ####setup test environment (vagrant)
@@ -8,7 +8,9 @@ workers receive jobs data from rabbit based on config and run them
 to run example main:
 `go run $SCHEDULER_HOME_DIR/example/main.go`
 
-##Setup workers to handle jobs:
+###Setup scheduler by editing config.json
+
+###Setup workers to handle jobs:
 Hand over a callback to run to `worker.HandleJobs`
 
 ```go

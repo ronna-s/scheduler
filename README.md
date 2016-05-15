@@ -24,12 +24,12 @@ Hand over a callback to run to `worker.HandleJobs`
 		},
 		PrefetchCount: 1,
 	}
-  NewWorker(amqpChConfig).HandleJobs(func(b []byte) (err error) {
-    var d myDataType
-    if err = json.Unmarshal(b,&d); err!=nil{
-      return
-    }
-    return foo(d)
-  }
+	NewWorker(amqpChConfig).HandleJobs(func(b []byte) (err error) {
+		var d myDataType
+		if err = json.Unmarshal(b, &d); err != nil {
+			return
+		}
+		return foo(d)
+	})
 
 ```

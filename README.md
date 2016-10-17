@@ -1,6 +1,6 @@
 # scheduler solution based on rabbitmq
 
-####setup test environment (vagrant)
+####Easy setup using vegrant
 `git clone https://github.com/ronna-s/scheduler && cd scheduler && vagrant up && vagrant ssh`
 
 to run example main:
